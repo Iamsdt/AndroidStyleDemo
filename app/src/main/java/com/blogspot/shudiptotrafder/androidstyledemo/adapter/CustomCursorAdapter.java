@@ -12,7 +12,6 @@ import com.blogspot.shudiptotrafder.androidstyledemo.MainActivity;
 import com.blogspot.shudiptotrafder.androidstyledemo.R;
 import com.blogspot.shudiptotrafder.androidstyledemo.data.MainWordDBContract;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -101,27 +100,6 @@ public class CustomCursorAdapter extends RecyclerView.Adapter<CustomCursorAdapte
         }
         return word;
     }
-
-    public ArrayList<String> getAllWord(){
-
-        ArrayList<String> arrayList = new ArrayList<>();
-
-        if (mCursor != null){
-
-            mCursor.moveToFirst();
-
-            for (int i = 0; i < mCursor.getCount(); i++) {
-                String word = mCursor.getString(MainActivity.INDEX_WORD);
-                arrayList.add(word);
-            }
-
-        }
-
-        return arrayList;
-    }
-
-
-
 
     public interface ClickListener{
         void onItemClickListener(String s);
