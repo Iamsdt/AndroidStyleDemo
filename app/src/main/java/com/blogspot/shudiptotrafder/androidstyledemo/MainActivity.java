@@ -2,6 +2,7 @@ package com.blogspot.shudiptotrafder.androidstyledemo;
 
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -42,9 +43,6 @@ public class MainActivity extends AppCompatActivity
 
     //loaders id that initialized that's one loader is running
     private static final int TASK_LOADER_ID = 0;
-
-    //speech to text
-    private static final int REQ_CODE_SPEECH_INPUT = 100;
 
 
     //it's also show when data base are loading
@@ -274,6 +272,24 @@ public class MainActivity extends AppCompatActivity
                 // Open the search view on the menu item click.
                 searchView.openSearch();
                 return true;
+            case R.id.action_nightMode:
+                //Todo less SharedPreferences
+                SharedPreferences preferences = getSharedPreferences("nightmode", Context.MODE_PRIVATE);
+                boolean b = preferences.getBoolean("nightmode",true);
+                SharedPreferences.Editor editor = preferences.edit();
+                if (b){
+                    //night mode code
+                    Toast.makeText(this, "night mode", Toast.LENGTH_SHORT).show();
+                    editor.putBoolean("nightmode",false);
+                    recreate();
+                } else {
+                    Toast.makeText(this, "night mode off", Toast.LENGTH_SHORT).show();
+                    editor.putBoolean("nightmode",true);
+                }
+
+                editor.apply();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -412,6 +428,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
             ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             if (matches != null && matches.size() > 0) {
@@ -442,11 +459,6 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
     }
 
 }
