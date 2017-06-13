@@ -2,7 +2,6 @@ package com.blogspot.shudiptotrafder.androidstyledemo;
 
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -24,7 +23,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.blogspot.shudiptotrafder.androidstyledemo.adapter.CustomCursorAdapter;
@@ -169,7 +167,11 @@ public class MainActivity extends AppCompatActivity
 
                 if (newText.length() > 0){
                     String selection = MainWordDBContract.Entry.COLUMN_WORD +" like ? ";
-                    String[] selectionArg = new String[]{"%"+newText+"%"};
+                    //if you are try to search from any position of word
+                    //then use
+                    //String[] selectionArg = new String[]{"%"+newText+"%"};
+                    //if you try to search from start of word the use this line
+                    String[] selectionArg = new String[]{newText+"%"};
 
                     Cursor cursor = getContentResolver().query(MainWordDBContract.Entry.CONTENT_URI,
                             MainActivity.projection,selection,selectionArg,null);
@@ -198,27 +200,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        searchView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Do something when the suggestion list is clicked.
-                String suggestion = searchView.getSuggestionAtPosition(position);
-
-                searchView.setQuery(suggestion, false);
-            }
-        });
 
 //        searchView.setTintAlpha(200);
         searchView.adjustTintAlpha(0.8f);
 
-        final Context context = this;
-        searchView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(context, "Long clicked position: " + i, Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
 
         searchView.setOnVoiceClickedListener(new MaterialSearchView.OnVoiceClickedListener() {
             @Override
@@ -306,7 +291,7 @@ public class MainActivity extends AppCompatActivity
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
                 "Speak your desire word");
         try {
-            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
+            startActivityForResult(intent, MaterialSearchView.REQUEST_VOICE);
         } catch (ActivityNotFoundException a) {
             a.printStackTrace();
             slet("Activity not found", a);
@@ -432,7 +417,25 @@ public class MainActivity extends AppCompatActivity
             if (matches != null && matches.size() > 0) {
                 String searchWrd = matches.get(0);
                 if (!TextUtils.isEmpty(searchWrd)) {
+
+                    //Todo more accure on settings
                     searchView.setQuery(searchWrd, false);
+                    Uri uri = MainWordDBContract.Entry.buildUriWithWord(searchWrd.toUpperCase());
+
+                    Cursor cursor = getContentResolver().query(uri,
+                            MainActivity.projection,null,null,null);
+
+                    if (cursor != null && cursor.getCount() > 0){
+                        Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                        intent.setData(uri);
+                        startActivity(intent);
+                        searchView.closeSearch();
+                        searchView.setCloseOnTintClick(false);
+                    }
+
+                    if (cursor != null){
+                        cursor.close();
+                    }
                 }
             }
 
@@ -445,14 +448,5 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
     }
-
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        searchView.activityResumed();
-////        String[] arr = getResources().getStringArray(R.array.suggestions);
-////
-////        searchView.addSuggestions(arr);
-//    }
 
 }
